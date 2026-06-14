@@ -11,8 +11,9 @@ import useSocketStore from '../store/socketStore';
 import {
   FaPlay, FaPause, FaForward, FaBackward,
   FaShuffle, FaRepeat, FaVolumeHigh, FaVolumeLow,
-  FaVolumeXmark, FaList, FaHeart,
+  FaVolumeXmark, FaList, FaHeart, FaMicrophone
 } from 'react-icons/fa6';
+import LyricsPanel from './LyricsPanel';
 
 const formatTime = (seconds) => {
   if (!seconds || isNaN(seconds)) return '0:00';
@@ -32,6 +33,7 @@ export default function MusicPlayer() {
 
   const { emitSongPlay, emitSongStop } = useSocketStore();
   const [showQueue, setShowQueue] = useState(false);
+  const [showLyrics, setShowLyrics] = useState(false);
   const [prevSongId, setPrevSongId] = useState(null);
   const seekRef = useRef(null);
 
@@ -153,6 +155,13 @@ export default function MusicPlayer() {
         )}
       </AnimatePresence>
 
+      {/* Lyrics Sidebar */}
+      <LyricsPanel 
+        song={currentSong} 
+        isOpen={showLyrics} 
+        onClose={() => setShowLyrics(false)} 
+      />
+
       {/* Player Bar */}
       <div className="fixed bottom-0 left-0 right-0 h-20 bg-spotify-dark border-t border-white/10 z-50 px-4">
         <div className="max-w-screen-2xl mx-auto h-full flex items-center gap-4">
@@ -269,7 +278,15 @@ export default function MusicPlayer() {
           {/* Right: Volume + Queue */}
           <div className="flex items-center gap-3 w-1/4 justify-end">
             <button
-              onClick={() => setShowQueue(!showQueue)}
+              onClick={() => { setShowLyrics(!showLyrics); setShowQueue(false); }}
+              className={`transition-colors hover:scale-110 ${showLyrics ? 'text-spotify-green' : 'text-spotify-light hover:text-white'}`}
+              title="Lyrics"
+            >
+              <FaMicrophone size={15} />
+            </button>
+
+            <button
+              onClick={() => { setShowQueue(!showQueue); setShowLyrics(false); }}
               className={`transition-colors hover:scale-110 ${showQueue ? 'text-spotify-green' : 'text-spotify-light hover:text-white'}`}
               title="Queue"
             >

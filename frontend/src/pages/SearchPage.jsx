@@ -5,9 +5,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { searchService } from '../services';
+import { searchService, jamendoService } from '../services';
 import usePlayerStore from '../store/playerStore';
 import SongRow from '../components/SongRow';
+import JamendoCard from '../components/JamendoCard';
 import { SongCardSkeleton } from '../components/Skeletons';
 import { FaMagnifyingGlass, FaFire, FaUser, FaMusic, FaCompactDisc, FaListUl } from 'react-icons/fa6';
 
@@ -57,17 +58,28 @@ export default function SearchPage() {
     const params = { q: debouncedQuery };
     if (activeTab !== 'all') params.type = activeTab;
 
-    searchService.search(params)
-      .then(({ data }) => setResults(data.data))
+    const localPromise = searchService.search(params);
+    const jamendoPromise = (activeTab === 'all' || activeTab === 'song')
+      ? jamendoService.searchTracks(debouncedQuery, 20)
+      : Promise.resolve({ data: { results: [] } });
+
+    Promise.all([localPromise, jamendoPromise])
+      .then(([localRes, jamendoRes]) => {
+        setResults({
+          ...localRes.data.data,
+          jamendoSongs: jamendoRes.data?.results || [],
+        });
+      })
       .catch(() => setResults(null))
       .finally(() => setIsLoading(false));
   }, [debouncedQuery, activeTab]);
 
   const hasSongs = results?.songs?.length > 0;
+  const hasJamendoSongs = results?.jamendoSongs?.length > 0;
   const hasAlbums = results?.albums?.length > 0;
   const hasArtists = results?.artists?.length > 0;
   const hasPlaylists = results?.playlists?.length > 0;
-  const hasResults = hasSongs || hasAlbums || hasArtists || hasPlaylists;
+  const hasResults = hasSongs || hasJamendoSongs || hasAlbums || hasArtists || hasPlaylists;
 
   return (
     <div className="pb-24 overflow-y-auto h-full px-6 md:px-8">
@@ -190,7 +202,7 @@ export default function SearchPage() {
             {/* Songs */}
             {(activeTab === 'all' || activeTab === 'song') && hasSongs && (
               <section>
-                <h3 className="text-lg font-bold text-white mb-4">Songs</h3>
+                <h3 className="text-lg font-bold text-white mb-4">Local Songs</h3>
                 <div className="space-y-1">
                   {results.songs.map((song, i) => (
                     <SongRow
@@ -199,6 +211,23 @@ export default function SearchPage() {
                       index={i}
                       queue={results.songs}
                       showAlbum
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Jamendo Tracks */}
+            {(activeTab === 'all' || activeTab === 'song') && hasJamendoSongs && (
+              <section>
+                <h3 className="text-lg font-bold text-white mb-4">Tracks</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {results.jamendoSongs.map((track, i) => (
+                    <JamendoCard
+                      key={track.id}
+                      track={track}
+                      queue={results.jamendoSongs}
+                      index={i}
                     />
                   ))}
                 </div>

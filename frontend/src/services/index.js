@@ -98,3 +98,11 @@ export const jamendoService = {
   searchArtists: (q, limit = 20) =>
     api.get('/jamendo/artists/search', { params: { q, limit } }),
 };
+
+// Spotify RapidAPI calls
+export const spotifyService = {
+  addTracksToPlaylist: (data) => api.post('/spotify/addTracks', data),
+  searchSongs: (q) => api.get('/spotify/search', { params: { q } }),
+  getTrack: (id) => api.get(`/spotify/tracks/${id}`),
+  getLyrics: (id) => api.get(`/spotify/track_lyrics/${id}`),
+};

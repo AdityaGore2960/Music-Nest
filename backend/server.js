@@ -26,6 +26,7 @@ const searchRoutes = require('./routes/searchRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const musicBrainzRoutes = require('./routes/musicBrainzRoutes');
 const jamendoRoutes = require('./routes/jamendoRoutes');
+const spotifyRoutes = require('./routes/spotifyRoutes');
 
 // Middleware
 const { errorHandler, notFound } = require('./middleware/errorHandler');
@@ -122,6 +123,7 @@ app.use('/api/search', searchRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/musicbrainz', musicBrainzRoutes);
 app.use('/api/jamendo', jamendoRoutes);
+app.use('/api/spotify', spotifyRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
